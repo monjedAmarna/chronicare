@@ -1,0 +1,153 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: 0 0% 100%;
+  --foreground: 222 84% 5%;
+  --muted: 210 40% 98%;
+  --muted-foreground: 215 16% 47%;
+  --popover: 0 0% 100%;
+  --popover-foreground: 222 84% 5%;
+  --card: 0 0% 100%;
+  --card-foreground: 222 84% 5%;
+  --border: 214 32% 91%;
+  --input: 214 32% 91%;
+  --primary: 171 81% 56%;
+  --primary-foreground: 211 88% 98%;
+  --secondary: 210 40% 98%;
+  --secondary-foreground: 222 84% 5%;
+  --accent: 210 40% 98%;
+  --accent-foreground: 222 84% 5%;
+  --destructive: 0 84% 60%;
+  --destructive-foreground: 210 40% 98%;
+  --ring: 171 81% 56%;
+  --radius: 0.5rem;
+  --chart-1: 171 81% 56%;
+  --chart-2: 201 96% 32%;
+  --chart-3: 142 76% 36%;
+  --chart-4: 158 64% 52%;
+  --chart-5: 189 75% 75%;
+  
+  /* Custom Chronicare theme colors */
+  --teal-primary: 174 81% 52%; /* #26D0CE */
+  --navy-primary: 215 28% 17%; /* #1A202C */
+  --teal-light: 174 100% 97%; /* #F0FDFF */
+  --teal-dark: 174 81% 42%; /* #1BA3A2 */
+  --accent-green: 142 76% 47%; /* #22C55E */
+  --accent-blue: 210 100% 60%; /* #3B82F6 */
+  --accent-purple: 262 83% 62%; /* #8B5CF6 */
+}
+
+.dark {
+  --background: 222 84% 5%;
+  --foreground: 210 40% 98%;
+  --muted: 217 33% 17%;
+  --muted-foreground: 215 20% 65%;
+  --popover: 222 84% 5%;
+  --popover-foreground: 210 40% 98%;
+  --card: 222 84% 5%;
+  --card-foreground: 210 40% 98%;
+  --border: 217 33% 17%;
+  --input: 217 33% 17%;
+  --primary: 171 81% 56%;
+  --primary-foreground: 222 84% 5%;
+  --secondary: 217 33% 17%;
+  --secondary-foreground: 210 40% 98%;
+  --accent: 217 33% 17%;
+  --accent-foreground: 210 40% 98%;
+  --destructive: 0 63% 31%;
+  --destructive-foreground: 210 40% 98%;
+  --ring: 171 81% 56%;
+  
+  /* Dark mode Chronicare colors */
+  --teal-primary: 171 81% 56%;
+  --navy-primary: 210 40% 98%;
+  --teal-light: 169 43% 15%;
+  --teal-dark: 169 43% 50%;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply font-sans antialiased bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .text-teal-primary {
+    color: hsl(var(--teal-primary));
+  }
+  
+  .text-navy-primary {
+    color: hsl(var(--navy-primary));
+  }
+  
+  .bg-teal-primary {
+    background-color: hsl(var(--teal-primary));
+  }
+  
+  .bg-navy-primary {
+    background-color: hsl(var(--navy-primary));
+  }
+  
+  .bg-teal-light {
+    background-color: hsl(var(--teal-light));
+  }
+  
+  .bg-teal-dark {
+    background-color: hsl(var(--teal-dark));
+  }
+  
+  .bg-accent-green {
+    background-color: hsl(var(--accent-green));
+  }
+  
+  .bg-accent-blue {
+    background-color: hsl(var(--accent-blue));
+  }
+  
+  .bg-accent-purple {
+    background-color: hsl(var(--accent-purple));
+  }
+  
+  .text-accent-green {
+    color: hsl(var(--accent-green));
+  }
+  
+  .text-accent-blue {
+    color: hsl(var(--accent-blue));
+  }
+  
+  .text-accent-purple {
+    color: hsl(var(--accent-purple));
+  }
+  
+  .border-teal-primary {
+    border-color: hsl(var(--teal-primary));
+  }
+  
+  .hover\:bg-teal-dark:hover {
+    background-color: hsl(var(--teal-dark));
+  }
+  
+  .focus\:ring-teal-primary:focus {
+    --tw-ring-color: hsl(var(--teal-primary));
+  }
+  
+  .hover\:scale-105:hover {
+    transform: scale(1.05);
+  }
+  
+  .animate-float {
+    animation: float 3s ease-in-out infinite;
+  }
+  
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-10px); }
+  }
+}
