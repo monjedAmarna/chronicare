@@ -3,8 +3,9 @@ import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQuery } from "@tanstack/react-query";
 import { register, RegisterData } from "@/api/auth.api";
+import { getDoctors } from "@/api/user.api";
 import { useAuth } from "@/hooks/useAuth";
 import { Eye, EyeOff, Mail, Lock, User, AlertCircle } from "lucide-react";
 import { useForm } from "react-hook-form";
@@ -25,10 +26,20 @@ export default function Register() {
     phone: z.string().regex(/^\d{10,15}$/, "Phone must be digits only, 10-15 characters"),
     password: z.string().min(8, "Password must be at least 8 characters").regex(/[A-Za-z]/, "Password must contain a letter").regex(/[0-9]/, "Password must contain a number"),
     confirmPassword: z.string(),
-    role: z.enum(["patient", "doctor", "admin"]),
+    role: z.enum(["patient", "doctor"]),
+    doctorId: z.number().optional(),
   }).refine((data) => data.password === data.confirmPassword, {
     message: "Passwords do not match",
     path: ["confirmPassword"],
+  }).refine((data) => {
+    // Require doctorId for patient registration
+    if (data.role === "patient") {
+      return data.doctorId !== undefined && data.doctorId > 0;
+    }
+    return true;
+  }, {
+    message: "Please select a doctor",
+    path: ["doctorId"],
   });
 
   type RegisterFormData = z.infer<typeof registerSchema>;
@@ -52,6 +63,15 @@ export default function Register() {
     },
   });
 
+  const watchedRole = watch("role");
+
+  // Fetch doctors for patient registration
+  const { data: doctors, isLoading: doctorsLoading } = useQuery({
+    queryKey: ["doctors"],
+    queryFn: getDoctors,
+    enabled: watchedRole === "patient", // Only fetch when role is patient
+  });
+
   const registerMutation = useMutation({
     mutationFn: register,
     onSuccess: async (data) => {
@@ -59,9 +79,7 @@ export default function Register() {
       await queryClient.invalidateQueries({ queryKey: ["auth-user"] });
       await queryClient.refetchQueries({ queryKey: ["auth-user"] });
       // Redirect based on user role
-      if (data.user.role === 'admin') {
-        setLocation("/admin/dashboard");
-      } else if (data.user.role === 'doctor') {
+      if (data.user.role === 'doctor') {
         setLocation("/doctor/dashboard");
       } else {
         setLocation("/patient/dashboard");
@@ -148,10 +166,31 @@ export default function Register() {
                 <select id="role" {...rhfRegister("role")} className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" disabled={registerMutation.isPending}>
                   <option value="patient">Patient</option>
                   <option value="doctor">Doctor</option>
-                  <option value="admin">Admin</option>
                 </select>
                 {errors.role && <span className="text-xs text-red-500">{errors.role.message}</span>}
               </div>
+
+              {/* Doctor selection for patients */}
+              {watchedRole === "patient" && (
+                <div className="space-y-2">
+                  <label htmlFor="doctorId" className="text-sm font-medium text-slate-700">Select your doctor</label>
+                  <select 
+                    id="doctorId" 
+                    {...rhfRegister("doctorId", { valueAsNumber: true })} 
+                    className="w-full px-3 py-2 border border-slate-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent" 
+                    disabled={registerMutation.isPending || doctorsLoading}
+                  >
+                    <option value="">Select a doctor...</option>
+                    {doctors?.map((doctor) => (
+                      <option key={doctor.id} value={doctor.id}>
+                        {doctor.name}
+                      </option>
+                    ))}
+                  </select>
+                  {doctorsLoading && <span className="text-xs text-slate-500">Loading doctors...</span>}
+                  {errors.doctorId && <span className="text-xs text-red-500">{errors.doctorId.message}</span>}
+                </div>
+              )}
               <div className="space-y-2">
                 <label htmlFor="password" className="text-sm font-medium text-slate-700">Password</label>
                 <div className="relative">

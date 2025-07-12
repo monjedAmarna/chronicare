@@ -203,6 +203,13 @@ export default function PatientDashboard() {
       <div className="space-y-4">
         <div>
           <h2 className="text-lg font-semibold text-slate-900 mb-4">Health Summary</h2>
+          {(() => {
+            console.log("🏥 PatientDashboard Debug:");
+            console.log("📊 healthSummary data:", healthSummary);
+            console.log("⏳ healthSummaryLoading:", healthSummaryLoading);
+            console.log("❌ healthSummaryError:", healthSummaryError);
+            return null;
+          })()}
           <HealthSummaryStats
             data={healthSummary}
             isLoading={healthSummaryLoading}

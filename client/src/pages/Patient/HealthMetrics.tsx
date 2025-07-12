@@ -70,6 +70,7 @@ export default function HealthMetrics() {
     mutationFn: (data: HealthMetricFormData & { userId: string }) => createHealthMetric(data),
     onSuccess: (response) => {
       queryClient.invalidateQueries({ queryKey: ["health-metrics"] });
+      queryClient.invalidateQueries({ queryKey: ["patient-health-summary"] });
       
       // Check if alerts were created
       if (response.alerts && response.alerts.length > 0) {

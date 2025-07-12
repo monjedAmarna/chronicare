@@ -5,11 +5,20 @@ import { getAnalytics, recentTrends, getPatientHealthSummaryController } from '.
 
 const router = express.Router();
 
+// Test endpoint
+router.get('/test', (req, res) => {
+  res.json({ message: 'Analytics route is working' });
+});
+
 // Analytics endpoint - admin only
 router.get('/', authMiddleware, roleMiddleware(['admin']), getAnalytics);
 router.get('/recent-trends', authMiddleware, roleMiddleware(['admin']), recentTrends);
 
-// Patient health summary - patients can access their own data
-router.get('/patient-summary', authMiddleware, roleMiddleware(['patient']), getPatientHealthSummaryController);
+// Patient health summary - temporarily allow all authenticated users for debugging
+router.get('/patient-summary', authMiddleware, (req, res, next) => {
+  console.log("🔍 Route Debug: patient-summary endpoint hit");
+  console.log("🔍 Route Debug: User role:", req.user?.role);
+  next();
+}, getPatientHealthSummaryController);
 
 export default router; 

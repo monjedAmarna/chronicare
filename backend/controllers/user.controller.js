@@ -1,4 +1,8 @@
 import * as userService from '../services/user.service.js';
+import User from '../models/User.js';
+import bcrypt from 'bcrypt';
+import jwt from 'jsonwebtoken';
+import { Op } from 'sequelize';
 
 export async function getUsers(req, res) {
   try {
@@ -96,5 +100,29 @@ export async function deleteUser(req, res) {
       return res.status(404).json({ message: 'User not found' });
     }
     res.status(500).json({ message: 'Something went wrong' });
+  }
+} 
+
+export async function getDoctors(req, res) {
+  try {
+    const doctors = await User.findAll({
+      attributes: ['id', 'name', 'firstName', 'lastName', 'email'],
+      where: {
+        role: 'doctor'
+      },
+      order: [['name', 'ASC']]
+    });
+
+    // Format the response to include a display name
+    const formattedDoctors = doctors.map(doctor => ({
+      id: doctor.id,
+      name: doctor.name || `${doctor.firstName || ''} ${doctor.lastName || ''}`.trim(),
+      email: doctor.email
+    }));
+
+    res.json(formattedDoctors);
+  } catch (err) {
+    console.error('Error fetching doctors:', err);
+    res.status(500).json({ message: 'Failed to fetch doctors', error: err.message });
   }
 } 

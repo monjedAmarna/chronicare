@@ -24,8 +24,21 @@ export interface PatientHealthSummary {
   averageDiastolic: string | null;
   totalAlerts: number; // This is now non-critical alerts only
   criticalAlerts: number;
+  metrics?: Array<{
+    type: string;
+    value: string;
+    createdAt: string;
+  }>;
 }
 
 export async function getPatientHealthSummary(): Promise<PatientHealthSummary> {
-  return apiRequest("GET", "/api/analytics/patient-summary");
+  console.log("🔍 Frontend API: Calling getPatientHealthSummary");
+  try {
+    const response = await apiRequest("GET", "/api/analytics/patient-summary");
+    console.log("🔍 Frontend API: Received response:", response);
+    return response;
+  } catch (error) {
+    console.error("❌ Frontend API Error:", error);
+    throw error;
+  }
 } 

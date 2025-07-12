@@ -9,12 +9,32 @@ export async function registerUser(req, res) {
     if (!errors.isEmpty()) {
       return res.status(400).json({ message: errors.array()[0].msg });
     }
-    const { name, email, password, role, firstName, lastName } = req.body;
+    const { name, email, password, role, firstName, lastName, doctorId } = req.body;
+    
     // Ignore confirmPassword if sent
     const existing = await User.findOne({ where: { email } });
     if (existing) {
       return res.status(400).json({ message: 'Email already in use' });
     }
+
+    // Validate doctorId if provided (for patient registration)
+    if (doctorId) {
+      const doctor = await User.findOne({ 
+        where: { 
+          id: doctorId, 
+          role: 'doctor' 
+        } 
+      });
+      if (!doctor) {
+        return res.status(400).json({ message: 'Invalid doctor selected' });
+      }
+    }
+
+    // Require doctorId for patient registration
+    if ((role || 'patient') === 'patient' && !doctorId) {
+      return res.status(400).json({ message: 'Doctor selection is required for patient registration' });
+    }
+
     const hashed = await hashPassword(password);
     const user = await User.create({ 
       name, 
@@ -22,8 +42,10 @@ export async function registerUser(req, res) {
       lastName, 
       email, 
       password: hashed, 
-      role: role || 'patient' 
+      role: role || 'patient',
+      doctorId: doctorId || null
     });
+    
     const token = generateToken(user);
     return res.json({
       token,
@@ -33,10 +55,12 @@ export async function registerUser(req, res) {
         firstName: user.firstName,
         lastName: user.lastName,
         email: user.email, 
-        role: user.role 
+        role: user.role,
+        doctorId: user.doctorId
       },
     });
   } catch (err) {
+    console.error('Registration error:', err);
     return res.status(500).json({ message: 'Something went wrong' });
   }
 }

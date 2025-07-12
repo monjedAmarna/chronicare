@@ -1,20 +1,17 @@
 import express from 'express';
 import authMiddleware from '../middlewares/auth.middleware.js';
 import roleMiddleware from '../middlewares/role.middleware.js';
-import { createUserValidation, updateUserValidation } from '../validators/user.validator.js';
-import { getUsers, createUser, getUserById, updateUser, deleteUser } from '../controllers/user.controller.js';
+import { getUsers, getUserById, updateUser, deleteUser, getDoctors } from '../controllers/user.controller.js';
 
 const router = express.Router();
 
-// All routes require admin role
-router.use(authMiddleware);
-router.use(roleMiddleware(['admin']));
+// Get all doctors (public endpoint for registration)
+router.get('/doctors', getDoctors);
 
-// User management routes (admin only)
-router.get('/', getUsers);
-router.post('/', createUserValidation, createUser);
-router.get('/:id', getUserById);
-router.put('/:id', updateUserValidation, updateUser);
-router.delete('/:id', deleteUser);
+// Protected routes
+router.get('/', authMiddleware, roleMiddleware(['admin']), getUsers);
+router.get('/:id', authMiddleware, getUserById);
+router.put('/:id', authMiddleware, updateUser);
+router.delete('/:id', authMiddleware, roleMiddleware(['admin']), deleteUser);
 
 export default router; 

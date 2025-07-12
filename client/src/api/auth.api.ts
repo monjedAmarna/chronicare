@@ -11,14 +11,15 @@ export interface RegisterData {
   email: string;
   password: string;
   phone: string;
-  role: "patient" | "doctor" | "admin";
+  role: "patient" | "doctor";
+  doctorId?: number;
 }
 
 export interface UserProfile {
   id: number;
   name: string;
   email: string;
-  role: 'patient' | 'doctor' | 'admin';
+  role: 'patient' | 'doctor';
   firstName: string;
   lastName: string;
   phone?: string;
@@ -38,6 +39,7 @@ export interface UserProfile {
   lastLoginAt?: string;
   createdAt: string;
   updatedAt: string;
+  doctorId?: number;
 }
 
 export async function signIn(data: SignInData): Promise<{ user: UserProfile; token: string }> {

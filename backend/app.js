@@ -19,6 +19,7 @@ import reportsRoutes from './routes/reports.routes.js';
 import activitiesRoutes from './routes/activities.routes.js';
 import systemRoutes from './routes/system.routes.js';
 import systemSettingsRoutes from './routes/systemSettings.routes.js';
+import { seedAdminUser } from './database/seeders/seedAdminUser.js';
 
 // Load environment variables
 dotenv.config();
@@ -87,10 +88,20 @@ server.listen(PORT, () => {
   console.log(`Chronicare backend listening on port ${PORT}`);
 });
 
-// Sync Sequelize models to the database
+// Sync Sequelize models to the database and seed admin user
 sequelize.sync({ alter: true })
-  .then(() => {
+  .then(async () => {
     console.log('Database synced successfully.');
+    
+    // Seed admin user after database sync
+    try {
+      console.log('🌱 Checking for admin user...');
+      await seedAdminUser();
+      console.log('✅ Admin user seeding completed during startup.');
+    } catch (error) {
+      console.error('⚠️  Admin user seeding failed during startup:', error.message);
+      // Don't crash the app if seeding fails
+    }
   })
   .catch((err) => {
     console.error('Database sync error:', err);

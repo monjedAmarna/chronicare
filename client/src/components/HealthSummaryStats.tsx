@@ -27,6 +27,14 @@ export default function HealthSummaryStats({
   onHealthAlertsClick,
   onCriticalAlertsClick
 }: HealthSummaryStatsProps) {
+  // Debug logging
+  console.log("🔍 HealthSummaryStats Debug:");
+  console.log("📊 Full data object:", data);
+  console.log("📈 data.metrics:", data?.metrics);
+  console.log("🩸 data.averageGlucose:", data?.averageGlucose);
+  console.log("⏳ isLoading:", isLoading);
+  console.log("❌ error:", error);
+
   if (isLoading) {
     return (
       <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 ${className}`}>
@@ -94,15 +102,37 @@ export default function HealthSummaryStats({
   // Find the latest glucose reading from data.metrics
   let latestGlucose: number | null = null;
   let latestGlucoseDate: string | null = null;
+  
+  console.log("🔍 Processing glucose data...");
+  
   if (Array.isArray(data?.metrics)) {
+    console.log("✅ data.metrics is an array with length:", data.metrics.length);
     const glucoseMetrics = data.metrics
       .filter((m: any) => m.type === 'glucose' && m.value)
       .sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    
+    console.log("🩸 Filtered glucose metrics:", glucoseMetrics);
+    
     if (glucoseMetrics.length > 0) {
       latestGlucose = parseFloat(glucoseMetrics[0].value);
       latestGlucoseDate = glucoseMetrics[0].createdAt;
+      console.log("✅ Found latest glucose from metrics:", latestGlucose, "at", latestGlucoseDate);
+    } else {
+      console.log("❌ No glucose metrics found in data.metrics array");
     }
+  } else {
+    console.log("❌ data.metrics is not an array or is undefined");
   }
+  
+  // Fallback: use average glucose if no latest glucose from metrics array
+  if (latestGlucose === null && data?.averageGlucose) {
+    latestGlucose = parseFloat(data.averageGlucose);
+    latestGlucoseDate = new Date().toISOString(); // Use current time as fallback
+    console.log("🔄 Using fallback average glucose:", latestGlucose);
+  }
+  
+  console.log("🎯 Final latestGlucose value:", latestGlucose);
+  console.log("📅 Final latestGlucoseDate:", latestGlucoseDate);
 
   return (
     <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 ${className}`}>
@@ -130,11 +160,14 @@ export default function HealthSummaryStats({
         </CardHeader>
         <CardContent>
           {latestGlucose !== null ? (() => {
+            console.log("🧮 Calculating correction dose with glucose:", latestGlucose);
             const currentGlucose = latestGlucose;
             const targetGlucose = 120;
             const correctionFactor = 50;
             const dose = ((currentGlucose - targetGlucose) / correctionFactor);
             const roundedDose = Math.round(dose * 10) / 10;
+            console.log("🧮 Calculation:", `(${currentGlucose} - ${targetGlucose}) / ${correctionFactor} = ${roundedDose} units`);
+            console.log("🧮 Final rounded dose:", roundedDose);
             return (
               <>
                 <div className="text-2xl font-bold">{roundedDose} units</div>

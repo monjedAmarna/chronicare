@@ -160,6 +160,8 @@ export async function getRecentTrends() {
 
 export async function getPatientHealthSummary(userId) {
   try {
+    console.log("🔍 Backend: getPatientHealthSummary called for userId:", userId);
+    
     // Get average glucose (last 7 days or all-time)
     const glucoseMetrics = await HealthMetric.findAll({
       attributes: [
@@ -171,6 +173,8 @@ export async function getPatientHealthSummary(userId) {
       },
       raw: true
     });
+
+    console.log("🔍 Backend: glucoseMetrics query result:", glucoseMetrics);
 
     // Get average blood pressure (systolic and diastolic)
     const systolicMetrics = await HealthMetric.findAll({
@@ -195,6 +199,35 @@ export async function getPatientHealthSummary(userId) {
       raw: true
     });
 
+    // Get latest glucose reading for correction dose calculation
+    const latestGlucoseMetric = await HealthMetric.findOne({
+      attributes: [
+        'value',
+        ['recordedAt', 'createdAt']
+      ],
+      where: {
+        userId: userId,
+        type: 'glucose'
+      },
+      order: [['recordedAt', 'DESC']],
+      raw: true
+    });
+
+    console.log("🔍 Backend: latestGlucoseMetric found:", latestGlucoseMetric);
+
+    // Also check all glucose metrics for this user
+    const allGlucoseMetrics = await HealthMetric.findAll({
+      attributes: ['id', 'value', ['recordedAt', 'createdAt'], 'type'],
+      where: {
+        userId: userId,
+        type: 'glucose'
+      },
+      order: [['recordedAt', 'DESC']],
+      raw: true
+    });
+
+    console.log("🔍 Backend: All glucose metrics for user:", allGlucoseMetrics);
+
     // Get critical alerts count
     const criticalAlerts = await Alert.count({
       where: {
@@ -213,13 +246,21 @@ export async function getPatientHealthSummary(userId) {
       }
     });
 
-    return {
+    const result = {
       averageGlucose: glucoseMetrics[0]?.averageGlucose ? parseFloat(glucoseMetrics[0].averageGlucose).toFixed(1) : null,
       averageSystolic: systolicMetrics[0]?.averageSystolic ? parseFloat(systolicMetrics[0].averageSystolic).toFixed(0) : null,
       averageDiastolic: diastolicMetrics[0]?.averageDiastolic ? parseFloat(diastolicMetrics[0].averageDiastolic).toFixed(0) : null,
       totalAlerts: healthAlerts,
-      criticalAlerts: criticalAlerts
+      criticalAlerts: criticalAlerts,
+      metrics: latestGlucoseMetric ? [{
+        type: 'glucose',
+        value: latestGlucoseMetric.value,
+        createdAt: latestGlucoseMetric.createdAt
+      }] : []
     };
+
+    console.log("🔍 Backend: Returning result:", JSON.stringify(result, null, 2));
+    return result;
   } catch (error) {
     logger.warn('getPatientHealthSummary failed', { error: error.message, userId });
     return {
@@ -227,7 +268,8 @@ export async function getPatientHealthSummary(userId) {
       averageSystolic: null,
       averageDiastolic: null,
       totalAlerts: 0,
-      criticalAlerts: 0
+      criticalAlerts: 0,
+      metrics: []
     };
   }
 } 
